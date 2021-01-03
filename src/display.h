@@ -1,6 +1,8 @@
 #ifndef DISPLAY_N
 #define DISPLAY_N
 
+#include "triangle.h"
+
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -23,5 +25,7 @@ void draw_pixel(int x, int y, uint32_t color);
 void draw_grid(int grid_size);
 void draw_rect(int start_x, int start_y, int w, int h, uint32_t color);
 void draw_circle(int center_x, int center_y, int radius, uint32_t color);
+void draw_line(int x1, int y1, int x2, int y2, uint32_t color);
+void draw_triangle(triangle_t t, uint32_t color);
 
 #endif
