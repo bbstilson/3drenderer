@@ -62,7 +62,7 @@ void render(void)
     {
       if (x % 100 == 0 || y % 100 == 0)
       {
-        set_pixel(x, y, 0xFF333333);
+        draw_pixel(x, y, 0xFF333333);
       }
     }
   }

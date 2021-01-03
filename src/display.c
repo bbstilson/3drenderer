@@ -63,7 +63,7 @@ bool initialize_window(void)
   return true;
 }
 
-void set_pixel(int x, int y, uint32_t color)
+void draw_pixel(int x, int y, uint32_t color)
 {
   color_buffer[(window_width * y) + x] = color;
 }
@@ -84,7 +84,7 @@ void clear_color_buffer(uint32_t color)
   {
     for (int x = 0; x < window_width; x++)
     {
-      set_pixel(x, y, color);
+      draw_pixel(x, y, color);
     }
   }
 }
@@ -95,7 +95,7 @@ void draw_rect(int start_x, int start_y, int w, int h, uint32_t color)
   {
     for (int x = 0; x < w; x++)
     {
-      set_pixel(x + start_x, y + start_y, color);
+      draw_pixel(x + start_x, y + start_y, color);
     }
   }
 }
@@ -108,7 +108,7 @@ void draw_circle(int center_x, int center_y, int radius, uint32_t color)
     {
       if (abs((int)floor(distance(x + center_x, y + center_y, center_x, center_y))) < radius)
       {
-        set_pixel(x + center_x, y + center_y, color);
+        draw_pixel(x + center_x, y + center_y, color);
       }
     }
   }
