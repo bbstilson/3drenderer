@@ -51,6 +51,12 @@ bool initialize_window(void) {
   return true;
 }
 
+void destroy_window(void) {
+  SDL_DestroyRenderer(renderer);
+  SDL_DestroyWindow(window);
+  SDL_Quit();
+}
+
 void render_color_buffer(void) {
   SDL_UpdateTexture(color_buffer_texture, NULL, color_buffer,
                     (int)(window_width * sizeof(uint32_t)));

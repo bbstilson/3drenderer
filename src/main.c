@@ -13,7 +13,6 @@
 triangle_t *triangles_to_render = NULL;
 
 vec3_t camera_position = {.x = 0, .y = 0, .z = -5};
-vec3_t cube_rotation = {.x = 0, .y = 0, .z = 0};
 float fov_factor = 640;
 
 bool is_running = false;
@@ -31,6 +30,9 @@ void setup(void) {
 
   color_buffer_texture = SDL_CreateTexture(
       renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
+
+  // Loads the cube values in the mesh data structure.
+  load_cube_mesh_data();
 }
 
 void process_input(void) {
@@ -73,25 +75,27 @@ void update(void) {
 
   triangles_to_render = NULL;
 
-  cube_rotation.y += 0.02;
-  cube_rotation.z += 0.02;
-  cube_rotation.x += 0.02;
+  mesh.rotation.y += 0.02;
+  mesh.rotation.z += 0.02;
+  mesh.rotation.x += 0.02;
 
-  for (int i = 0; i < N_MESH_FACES; i++) {
-    face_t mesh_face = mesh_faces[i];
+  int num_faces = array_length(mesh.faces);
+  for (int i = 0; i < num_faces; i++) {
+    face_t cube_face = mesh.faces[i];
+
     vec3_t face_vertices[3];
-    face_vertices[0] = mesh_vertices[mesh_face.a - 1];
-    face_vertices[1] = mesh_vertices[mesh_face.b - 1];
-    face_vertices[2] = mesh_vertices[mesh_face.c - 1];
+    face_vertices[0] = mesh.vertices[cube_face.a - 1];
+    face_vertices[1] = mesh.vertices[cube_face.b - 1];
+    face_vertices[2] = mesh.vertices[cube_face.c - 1];
 
     triangle_t projected_triangle;
 
     for (int j = 0; j < 3; j++) {
       vec3_t point = face_vertices[j];
       // Do some rotations.
-      point = vec3_rotate_x(point, cube_rotation.x);
-      point = vec3_rotate_y(point, cube_rotation.y);
-      point = vec3_rotate_z(point, cube_rotation.z);
+      point = vec3_rotate_x(point, mesh.rotation.x);
+      point = vec3_rotate_y(point, mesh.rotation.y);
+      point = vec3_rotate_z(point, mesh.rotation.z);
 
       // Scootch it back.
       point.z -= camera_position.z;
@@ -128,11 +132,10 @@ void render(void) {
   SDL_RenderPresent(renderer);
 }
 
-void destroy_window(void) {
+void free_resources(void) {
   free(color_buffer);
-  SDL_DestroyRenderer(renderer);
-  SDL_DestroyWindow(window);
-  SDL_Quit();
+  array_free(mesh.vertices);
+  array_free(mesh.faces);
 }
 
 int main(void) {
@@ -147,6 +150,7 @@ int main(void) {
   }
 
   destroy_window();
+  free_resources();
 
   return 0;
 }
