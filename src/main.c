@@ -71,8 +71,8 @@ void update(void) {
   do_delay();
 
   cube_rotation.y += 0.02;
-  // cube_rotation.z += 0.01;
-  // cube_rotation.x += 0.01;
+  cube_rotation.z += 0.02;
+  cube_rotation.x += 0.02;
 
   for (int i = 0; i < N_MESH_FACES; i++) {
     face_t mesh_face = mesh_faces[i];
@@ -113,9 +113,6 @@ void render(void) {
 
   for (int i = 0; i < N_MESH_FACES; i++) {
     triangle_t triangle = triangles_to_render[i];
-    // draw_rect(triangle.points[0].x, triangle.points[0].y, 3, 3, color);
-    // draw_rect(triangle.points[1].x, triangle.points[1].y, 3, 3, color);
-    // draw_rect(triangle.points[2].x, triangle.points[2].y, 3, 3, color);
     draw_triangle(triangle, color);
   }
 
