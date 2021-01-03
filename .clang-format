@@ -1,0 +1,11 @@
+AlignEscapedNewlinesLeft: true
+AlignTrailingComments: true
+ColumnLimit: 100
+IndentWidth: 2
+Language: Cpp
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeParens: Always
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 1
+SpacesInAngles: false
+SpacesInParentheses: false
