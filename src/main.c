@@ -1,3 +1,4 @@
+#include "array.h"
 #include "display.h"
 #include "mesh.h"
 #include "triangle.h"
@@ -9,7 +10,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-triangle_t triangles_to_render[N_MESH_FACES];
+triangle_t *triangles_to_render = NULL;
 
 vec3_t camera_position = {.x = 0, .y = 0, .z = -5};
 vec3_t cube_rotation = {.x = 0, .y = 0, .z = 0};
@@ -70,6 +71,8 @@ void do_delay(void) {
 void update(void) {
   do_delay();
 
+  triangles_to_render = NULL;
+
   cube_rotation.y += 0.02;
   cube_rotation.z += 0.02;
   cube_rotation.x += 0.02;
@@ -103,7 +106,7 @@ void update(void) {
       projected_triangle.points[j] = projected_point;
     }
 
-    triangles_to_render[i] = projected_triangle;
+    array_push(triangles_to_render, projected_triangle);
   }
 }
 
@@ -111,10 +114,13 @@ void render(void) {
   // draw_grid(50);
   uint32_t color = 0xFFFF00FF;
 
-  for (int i = 0; i < N_MESH_FACES; i++) {
+  int num_triangles = array_length(triangles_to_render);
+  for (int i = 0; i < num_triangles; i++) {
     triangle_t triangle = triangles_to_render[i];
     draw_triangle(triangle, color);
   }
+
+  array_free(triangles_to_render);
 
   render_color_buffer();
   clear_color_buffer(0xFF000000);
