@@ -16,12 +16,12 @@ extern SDL_Renderer *renderer;
 extern SDL_Texture *color_buffer_texture;
 extern uint32_t *color_buffer;
 
-bool initialize_window (void);
-void render_color_buffer (void);
-void clear_color_buffer (uint32_t color);
-void draw_pixel (int x, int y, uint32_t color);
-void draw_grid (int grid_size);
-void draw_rect (int start_x, int start_y, int w, int h, uint32_t color);
-void draw_circle (int center_x, int center_y, int radius, uint32_t color);
+bool initialize_window(void);
+void render_color_buffer(void);
+void clear_color_buffer(uint32_t color);
+void draw_pixel(int x, int y, uint32_t color);
+void draw_grid(int grid_size);
+void draw_rect(int start_x, int start_y, int w, int h, uint32_t color);
+void draw_circle(int center_x, int center_y, int radius, uint32_t color);
 
 #endif

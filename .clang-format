@@ -4,7 +4,7 @@ ColumnLimit: 100
 IndentWidth: 2
 Language: Cpp
 SpaceBeforeAssignmentOperators: true
-SpaceBeforeParens: Always
+SpaceBeforeParens: ControlStatements
 SpaceInEmptyParentheses: false
 SpacesBeforeTrailingComments: 1
 SpacesInAngles: false
