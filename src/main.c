@@ -12,7 +12,7 @@
 
 triangle_t *triangles_to_render = NULL;
 
-vec3_t camera_position = {.x = 0, .y = -10, .z = -40};
+vec3_t camera_position = {.x = 0, .y = 0, .z = -5};
 float fov_factor = 640;
 
 bool is_running = false;
@@ -31,8 +31,8 @@ void setup(void) {
   color_buffer_texture = SDL_CreateTexture(
       renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
 
-  load_obj_file_data("./assets/MaleLow.obj");
-  // load_obj_file_data("./assets/cube.obj");
+  // load_obj_file_data("./assets/MaleLow.obj");
+  load_obj_file_data("./assets/cube.obj");
 }
 
 void process_input(void) {

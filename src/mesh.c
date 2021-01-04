@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-mesh_t mesh = {.vertices = NULL, .faces = NULL, {.x = 3, .y = 0, .z = 0}};
+mesh_t mesh = {.vertices = NULL, .faces = NULL, {.x = 0, .y = 0, .z = 0}};
 
 const char VERTEX_PREFIX[] = "v ";
 const char FACE_PREFIX[] = "f ";
