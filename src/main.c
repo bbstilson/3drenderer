@@ -12,7 +12,7 @@
 
 triangle_t *triangles_to_render = NULL;
 
-vec3_t camera_position = {.x = 0, .y = 0, .z = -5};
+vec3_t camera_position = {.x = 0, .y = -10, .z = -40};
 float fov_factor = 640;
 
 bool is_running = false;
@@ -31,8 +31,8 @@ void setup(void) {
   color_buffer_texture = SDL_CreateTexture(
       renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
 
-  // Loads the cube values in the mesh data structure.
-  load_cube_mesh_data();
+  load_obj_file_data("./assets/MaleLow.obj");
+  // load_obj_file_data("./assets/cube.obj");
 }
 
 void process_input(void) {
@@ -75,9 +75,10 @@ void update(void) {
 
   triangles_to_render = NULL;
 
+  // printf("%f\n", mesh.rotation.x);
+  // mesh.rotation.x += 0.02;
   mesh.rotation.y += 0.02;
-  mesh.rotation.z += 0.02;
-  mesh.rotation.x += 0.02;
+  // mesh.rotation.z += 0.02;
 
   int num_faces = array_length(mesh.faces);
   for (int i = 0; i < num_faces; i++) {
@@ -97,8 +98,9 @@ void update(void) {
       point = vec3_rotate_y(point, mesh.rotation.y);
       point = vec3_rotate_z(point, mesh.rotation.z);
 
-      // Scootch it back.
+      // Adjust for camera.
       point.z -= camera_position.z;
+      point.y -= camera_position.y;
 
       // Project the current vertext to 2d.
       vec2_t projected_point = project(point);
@@ -116,7 +118,7 @@ void update(void) {
 
 void render(void) {
   // draw_grid(50);
-  uint32_t color = 0xFFFF00FF;
+  uint32_t color = 0xFF000000;
 
   int num_triangles = array_length(triangles_to_render);
   for (int i = 0; i < num_triangles; i++) {
@@ -127,7 +129,7 @@ void render(void) {
   array_free(triangles_to_render);
 
   render_color_buffer();
-  clear_color_buffer(0xFF000000);
+  clear_color_buffer(0xFFF3F3F3);
 
   SDL_RenderPresent(renderer);
 }
