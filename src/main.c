@@ -12,9 +12,6 @@
 
 triangle_t *triangles_to_render = NULL;
 
-vec3_t camera_position = {.x = 0, .y = 0, .z = -5};
-float fov_factor = 640;
-
 bool is_running = false;
 int previous_frame_time = 0;
 
@@ -75,10 +72,9 @@ void update(void) {
 
   triangles_to_render = NULL;
 
-  // printf("%f\n", mesh.rotation.x);
-  // mesh.rotation.x += 0.02;
+  mesh.rotation.x += 0.02;
   mesh.rotation.y += 0.02;
-  // mesh.rotation.z += 0.02;
+  mesh.rotation.z += 0.02;
 
   int num_faces = array_length(mesh.faces);
   for (int i = 0; i < num_faces; i++) {
@@ -89,23 +85,36 @@ void update(void) {
     face_vertices[1] = mesh.vertices[cube_face.b - 1];
     face_vertices[2] = mesh.vertices[cube_face.c - 1];
 
+    vec3_t transformed_vertices[3];
+    for (int j = 0; j < 3; j++) {
+      vec3_t transformed_vertex = face_vertices[j];
+
+      // Do some rotations.
+      transformed_vertex = vec3_rotate_x(transformed_vertex, mesh.rotation.x);
+      transformed_vertex = vec3_rotate_y(transformed_vertex, mesh.rotation.y);
+      transformed_vertex = vec3_rotate_z(transformed_vertex, mesh.rotation.z);
+
+      // Adjust for camera.
+      // transformed_vertex.x -= camera_position.x;
+      // transformed_vertex.y -= camera_position.y;
+      // transformed_vertex.z -= camera_position.z;
+      transformed_vertex.z += 5;
+
+      transformed_vertices[j] = transformed_vertex;
+    }
+
+    // Cull triangles that are not facing the camera.
+    if (!should_render(transformed_vertices)) {
+      continue;
+    }
+
     triangle_t projected_triangle;
 
     for (int j = 0; j < 3; j++) {
-      vec3_t point = face_vertices[j];
-      // Do some rotations.
-      point = vec3_rotate_x(point, mesh.rotation.x);
-      point = vec3_rotate_y(point, mesh.rotation.y);
-      point = vec3_rotate_z(point, mesh.rotation.z);
-
-      // Adjust for camera.
-      point.z -= camera_position.z;
-      point.y -= camera_position.y;
-
       // Project the current vertext to 2d.
-      vec2_t projected_point = project(point);
+      vec2_t projected_point = project(transformed_vertices[j]);
 
-      // Scale and translate the projected points to  the middle of the screen.
+      // Scale and translate the projected points to the middle of the screen.
       projected_point.x += (window_width / 2);
       projected_point.y += (window_height / 2);
 

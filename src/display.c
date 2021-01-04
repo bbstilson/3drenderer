@@ -5,6 +5,9 @@
 int window_width = 800;
 int window_height = 600;
 
+vec3_t camera_position = {.x = 0, .y = 0, .z = 0};
+float fov_factor = 640;
+
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Texture *color_buffer_texture = NULL;
@@ -127,4 +130,15 @@ void draw_triangle(triangle_t t, uint32_t color) {
   draw_line(t.points[0].x, t.points[0].y, t.points[1].x, t.points[1].y, color);
   draw_line(t.points[1].x, t.points[1].y, t.points[2].x, t.points[2].y, color);
   draw_line(t.points[2].x, t.points[2].y, t.points[0].x, t.points[0].y, color);
+}
+
+bool should_render(vec3_t *vertices) {
+  vec3_t ab = vec3_sub(vertices[1], vertices[0]);
+  vec3_normalize(&ab);
+  vec3_t ac = vec3_sub(vertices[2], vertices[0]);
+  vec3_normalize(&ac);
+  vec3_t normal = vec3_cross(ab, ac);
+  vec3_normalize(&normal);
+  vec3_t camera_ray = vec3_sub(camera_position, vertices[0]);
+  return vec3_dot(normal, camera_ray) > 0;
 }
