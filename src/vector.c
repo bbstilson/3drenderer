@@ -2,6 +2,8 @@
 
 #include <math.h>
 
+float vec2_inv_slope(vec2_t v0, vec2_t v1) { return (v1.x - v0.x) / (v1.y - v0.y); }
+
 float vec2_length(vec2_t v) { return sqrt(pow(v.x, 2) + pow(v.y, 2)); }
 float vec3_length(vec3_t v) { return sqrt(pow(v.x, 2) + pow(v.y, 2) + pow(v.z, 2)); }
 
@@ -86,6 +88,18 @@ void vec3_normalize(vec3_t *v) {
   v->x /= length;
   v->y /= length;
   v->z /= length;
+}
+
+void vec2_swap(vec2_t *a, vec2_t *b) {
+  vec2_t temp = *a;
+  *a = *b;
+  *b = temp;
+}
+
+void vec3_swap(vec3_t *a, vec3_t *b) {
+  vec3_t temp = *a;
+  *a = *b;
+  *b = temp;
 }
 
 vec3_t vec3_rotate_x(vec3_t v, float angle) {

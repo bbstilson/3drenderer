@@ -13,6 +13,13 @@
 triangle_t *triangles_to_render = NULL;
 
 bool is_running = false;
+
+// Flags
+bool should_cull_backfaces = true;
+bool should_fill_triangles = true;
+bool should_draw_edges = false;
+bool should_draw_vertices = false;
+
 int previous_frame_time = 0;
 
 void setup(void) {
@@ -28,7 +35,6 @@ void setup(void) {
   color_buffer_texture = SDL_CreateTexture(
       renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
 
-  // load_obj_file_data("./assets/MaleLow.obj");
   load_obj_file_data("./assets/cube.obj");
 }
 
@@ -41,8 +47,36 @@ void process_input(void) {
     is_running = false;
     break;
   case SDL_KEYDOWN:
-    if (event.key.keysym.sym == SDLK_ESCAPE) {
+    switch (event.key.keysym.sym) {
+    case SDLK_ESCAPE:
       is_running = false;
+      break;
+    case SDLK_1:
+      should_fill_triangles = false;
+      should_draw_edges = true;
+      should_draw_vertices = true;
+      break;
+    case SDLK_2:
+      should_fill_triangles = false;
+      should_draw_edges = true;
+      should_draw_vertices = false;
+      break;
+    case SDLK_3:
+      should_fill_triangles = true;
+      should_draw_edges = false;
+      should_draw_vertices = false;
+      break;
+    case SDLK_4:
+      should_fill_triangles = true;
+      should_draw_edges = true;
+      should_draw_vertices = false;
+      break;
+    case SDLK_c:
+      should_cull_backfaces = true;
+      break;
+    case SDLK_d:
+      should_cull_backfaces = false;
+      break;
     }
     break;
   }
@@ -73,7 +107,7 @@ void update(void) {
   triangles_to_render = NULL;
 
   mesh.rotation.x += 0.02;
-  mesh.rotation.y += 0.02;
+  // mesh.rotation.y += 0.02;
   mesh.rotation.z += 0.02;
 
   int num_faces = array_length(mesh.faces);
@@ -104,7 +138,7 @@ void update(void) {
     }
 
     // Cull triangles that are not facing the camera.
-    if (!should_render(transformed_vertices)) {
+    if (should_cull_backfaces && !should_render(transformed_vertices)) {
       continue;
     }
 
@@ -125,20 +159,37 @@ void update(void) {
   }
 }
 
+color_t black = 0xFF000000;
+color_t white = 0xFFFFFFFF;
+color_t lavender = 0xFFE6E6fA;
+color_t firebrick = 0xFFB22222;
+color_t lime = 0xC8FF01;
+color_t background_gray = 0xFFF3F3F3;
+
 void render(void) {
-  // draw_grid(50);
-  uint32_t color = 0xFF000000;
+  draw_grid(50);
 
   int num_triangles = array_length(triangles_to_render);
   for (int i = 0; i < num_triangles; i++) {
-    triangle_t triangle = triangles_to_render[i];
-    draw_triangle(triangle, color);
+    triangle_t t = triangles_to_render[i];
+    if (should_draw_vertices) {
+      for (int j = 0; j < 3; j++) {
+        draw_rect(t.points[j].x - 2, t.points[j].y - 2, 4, 4, firebrick);
+      }
+    }
+
+    if (should_fill_triangles) {
+      draw_filled_triangle(t, firebrick);
+    }
+    if (should_draw_edges) {
+      draw_triangle_edges(t, black);
+    }
   }
 
   array_free(triangles_to_render);
 
   render_color_buffer();
-  clear_color_buffer(0xFFF3F3F3);
+  clear_color_buffer(background_gray);
 
   SDL_RenderPresent(renderer);
 }

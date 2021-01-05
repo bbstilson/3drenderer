@@ -1,6 +1,4 @@
 #include "display.h"
-#include "triangle.h"
-#include "utils.h"
 
 int window_width = 800;
 int window_height = 600;
@@ -66,14 +64,14 @@ void render_color_buffer(void) {
   SDL_RenderCopy(renderer, color_buffer_texture, NULL, NULL);
 }
 
-void clear_color_buffer(uint32_t color) {
+void clear_color_buffer(color_t color) {
   for (int y = 0; y < window_height; y++) {
     for (int x = 0; x < window_width; x++) {
       draw_pixel(x, y, color);
     }
   }
 }
-void draw_pixel(int x, int y, uint32_t color) {
+void draw_pixel(int x, int y, color_t color) {
   if (x >= 0 && y >= 0 && x < window_width && y < window_height) {
     color_buffer[(window_width * y) + x] = color;
   }
@@ -89,7 +87,7 @@ void draw_grid(int grid_size) {
   }
 }
 
-void draw_rect(int start_x, int start_y, int w, int h, uint32_t color) {
+void draw_rect(int start_x, int start_y, int w, int h, color_t color) {
   for (int y = 0; y < h; y++) {
     for (int x = 0; x < w; x++) {
       draw_pixel(x + start_x, y + start_y, color);
@@ -97,7 +95,7 @@ void draw_rect(int start_x, int start_y, int w, int h, uint32_t color) {
   }
 }
 
-void draw_circle(int center_x, int center_y, int radius, uint32_t color) {
+void draw_circle(int center_x, int center_y, int radius, color_t color) {
   for (int y = -radius; y < radius; y++) {
     for (int x = -radius; x < radius; x++) {
       if (abs((int)floor(distance(x + center_x, y + center_y, center_x, center_y))) < radius) {
@@ -107,7 +105,7 @@ void draw_circle(int center_x, int center_y, int radius, uint32_t color) {
   }
 }
 
-void draw_line(int x1, int y1, int x2, int y2, uint32_t color) {
+void draw_line(int x1, int y1, int x2, int y2, color_t color) {
   int delta_x = x2 - x1;
   int delta_y = y2 - y1;
 
@@ -124,12 +122,6 @@ void draw_line(int x1, int y1, int x2, int y2, uint32_t color) {
     current_x += x_inc;
     current_y += y_inc;
   }
-}
-
-void draw_triangle(triangle_t t, uint32_t color) {
-  draw_line(t.points[0].x, t.points[0].y, t.points[1].x, t.points[1].y, color);
-  draw_line(t.points[1].x, t.points[1].y, t.points[2].x, t.points[2].y, color);
-  draw_line(t.points[2].x, t.points[2].y, t.points[0].x, t.points[0].y, color);
 }
 
 bool should_render(vec3_t *vertices) {
