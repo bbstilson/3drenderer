@@ -1,5 +1,5 @@
-#ifndef DISPLAY_N
-#define DISPLAY_N
+#ifndef DISPLAY_H
+#define DISPLAY_H
 
 #include "utils.h"
 #include "vector.h"
@@ -10,7 +10,7 @@
 
 typedef uint32_t color_t;
 
-#define FPS 30
+#define FPS 60
 #define FRAME_TARGET_TIME (1000 / FPS)
 
 extern int window_width;

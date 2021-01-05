@@ -1,6 +1,7 @@
 #include "array.h"
 #include "display.h"
 #include "mesh.h"
+#include "settings.h"
 #include "triangle.h"
 #include "vector.h"
 
@@ -13,16 +14,11 @@
 triangle_t *triangles_to_render = NULL;
 
 bool is_running = false;
-
-// Flags
-bool should_cull_backfaces = true;
-bool should_fill_triangles = true;
-bool should_draw_edges = false;
-bool should_draw_vertices = false;
-
 int previous_frame_time = 0;
 
 void setup(void) {
+  render_method = RENDER_WIRE;
+  cull_method = CULL_BACKFACE;
   /*
   There is a possibility that malloc will fail to allocate that number of bytes
   in memory, e.g., when the machine does not have enough free memory. If that
@@ -52,30 +48,22 @@ void process_input(void) {
       is_running = false;
       break;
     case SDLK_1:
-      should_fill_triangles = false;
-      should_draw_edges = true;
-      should_draw_vertices = true;
+      render_method = RENDER_WIRE_VERTEX;
       break;
     case SDLK_2:
-      should_fill_triangles = false;
-      should_draw_edges = true;
-      should_draw_vertices = false;
+      render_method = RENDER_WIRE;
       break;
     case SDLK_3:
-      should_fill_triangles = true;
-      should_draw_edges = false;
-      should_draw_vertices = false;
+      render_method = RENDER_FILL_TRIANGLE;
       break;
     case SDLK_4:
-      should_fill_triangles = true;
-      should_draw_edges = true;
-      should_draw_vertices = false;
+      render_method = RENDER_FILL_TRIANGLE_WIRE;
       break;
     case SDLK_c:
-      should_cull_backfaces = true;
+      cull_method = CULL_NONE;
       break;
     case SDLK_d:
-      should_cull_backfaces = false;
+      cull_method = CULL_BACKFACE;
       break;
     }
     break;
@@ -138,7 +126,7 @@ void update(void) {
     }
 
     // Cull triangles that are not facing the camera.
-    if (should_cull_backfaces && !should_render(transformed_vertices)) {
+    if (cull_method == CULL_BACKFACE && !should_render(transformed_vertices)) {
       continue;
     }
 
@@ -172,16 +160,17 @@ void render(void) {
   int num_triangles = array_length(triangles_to_render);
   for (int i = 0; i < num_triangles; i++) {
     triangle_t t = triangles_to_render[i];
-    if (should_draw_vertices) {
+    if (render_method == RENDER_WIRE_VERTEX) {
       for (int j = 0; j < 3; j++) {
-        draw_rect(t.points[j].x - 2, t.points[j].y - 2, 4, 4, firebrick);
+        draw_rect(t.points[j].x - 3, t.points[j].y - 3, 6, 6, firebrick);
       }
     }
 
-    if (should_fill_triangles) {
+    if (render_method == RENDER_FILL_TRIANGLE || render_method == RENDER_FILL_TRIANGLE_WIRE) {
       draw_filled_triangle(t, firebrick);
     }
-    if (should_draw_edges) {
+    if (render_method == RENDER_WIRE || render_method == RENDER_FILL_TRIANGLE_WIRE ||
+        render_method == RENDER_WIRE_VERTEX) {
       draw_triangle_edges(t, black);
     }
   }
