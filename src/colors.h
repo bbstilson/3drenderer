@@ -1,0 +1,21 @@
+#ifndef COLORS_H
+#define COLORS_H
+
+#include "display.h"
+
+#define BLACK 0xFF000000
+#define WHITE 0xFFFFFFFF
+
+#define RED 0xFFFF0000
+#define ORANGE 0xFFFFA500
+#define YELLOW 0xFFFFFF00
+#define GREEN 0xFF008000
+#define BLUE 0xFF0000FF
+#define PURPLE 0xFF4B0082
+
+#define LAVENDER 0xFFE6E6fA
+#define FIREBRICK 0xFFB22222
+#define LIME 0xC8FF01
+#define LIGHT_GRAY 0xFFF3F3F3
+
+#endif

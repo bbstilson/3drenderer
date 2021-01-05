@@ -6,10 +6,10 @@ void int_swap(int *a, int *b) {
   *b = tmp;
 }
 
-void draw_triangle_edges(triangle_t t, color_t color) {
-  draw_line(t.points[0].x, t.points[0].y, t.points[1].x, t.points[1].y, color);
-  draw_line(t.points[1].x, t.points[1].y, t.points[2].x, t.points[2].y, color);
-  draw_line(t.points[2].x, t.points[2].y, t.points[0].x, t.points[0].y, color);
+void draw_triangle_edges(triangle_t t) {
+  draw_line(t.points[0].x, t.points[0].y, t.points[1].x, t.points[1].y, t.color);
+  draw_line(t.points[1].x, t.points[1].y, t.points[2].x, t.points[2].y, t.color);
+  draw_line(t.points[2].x, t.points[2].y, t.points[0].x, t.points[0].y, t.color);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -72,7 +72,7 @@ void fill_flat_top_triangle(int x0, int y0, int x1, int y1, int x2, int y2, colo
   }
 }
 
-void draw_filled_triangle(triangle_t t, color_t color) {
+void draw_filled_triangle(triangle_t t) {
   int x0 = t.points[0].x;
   int y0 = t.points[0].y;
   int x1 = t.points[1].x;
@@ -97,11 +97,11 @@ void draw_filled_triangle(triangle_t t, color_t color) {
   int mx = (((x2 - x0) * (y1 - y0)) / (y2 - y0)) + x0;
 
   if (y1 == y2) {
-    fill_flat_bottom_triangle(x0, y0, x1, y1, x2, y2, color);
+    fill_flat_bottom_triangle(x0, y0, x1, y1, x2, y2, t.color);
   } else if (y0 == y1) {
-    fill_flat_top_triangle(x0, y0, x1, y1, x2, y2, color);
+    fill_flat_top_triangle(x0, y0, x1, y1, x2, y2, t.color);
   } else {
-    fill_flat_bottom_triangle(x0, y0, x1, y1, mx, my, color);
-    fill_flat_top_triangle(x1, y1, mx, my, x2, y2, color);
+    fill_flat_bottom_triangle(x0, y0, x1, y1, mx, my, t.color);
+    fill_flat_top_triangle(x1, y1, mx, my, x2, y2, t.color);
   }
 }

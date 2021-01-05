@@ -1,4 +1,5 @@
 #include "array.h"
+#include "colors.h"
 #include "display.h"
 #include "mesh.h"
 #include "settings.h"
@@ -31,7 +32,8 @@ void setup(void) {
   color_buffer_texture = SDL_CreateTexture(
       renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
 
-  load_obj_file_data("./assets/cube.obj");
+  // load_obj_file_data("./assets/cube.obj");
+  load_cube_mesh_data();
 }
 
 void process_input(void) {
@@ -95,7 +97,7 @@ void update(void) {
   triangles_to_render = NULL;
 
   mesh.rotation.x += 0.02;
-  // mesh.rotation.y += 0.02;
+  mesh.rotation.y += 0.02;
   mesh.rotation.z += 0.02;
 
   int num_faces = array_length(mesh.faces);
@@ -131,6 +133,7 @@ void update(void) {
     }
 
     triangle_t projected_triangle;
+    projected_triangle.color = cube_face.color;
 
     for (int j = 0; j < 3; j++) {
       // Project the current vertext to 2d.
@@ -147,13 +150,6 @@ void update(void) {
   }
 }
 
-color_t black = 0xFF000000;
-color_t white = 0xFFFFFFFF;
-color_t lavender = 0xFFE6E6fA;
-color_t firebrick = 0xFFB22222;
-color_t lime = 0xC8FF01;
-color_t background_gray = 0xFFF3F3F3;
-
 void render(void) {
   draw_grid(50);
 
@@ -162,23 +158,23 @@ void render(void) {
     triangle_t t = triangles_to_render[i];
     if (render_method == RENDER_WIRE_VERTEX) {
       for (int j = 0; j < 3; j++) {
-        draw_rect(t.points[j].x - 3, t.points[j].y - 3, 6, 6, firebrick);
+        draw_rect(t.points[j].x - 3, t.points[j].y - 3, 6, 6, FIREBRICK);
       }
     }
 
     if (render_method == RENDER_FILL_TRIANGLE || render_method == RENDER_FILL_TRIANGLE_WIRE) {
-      draw_filled_triangle(t, firebrick);
+      draw_filled_triangle(t);
     }
     if (render_method == RENDER_WIRE || render_method == RENDER_FILL_TRIANGLE_WIRE ||
         render_method == RENDER_WIRE_VERTEX) {
-      draw_triangle_edges(t, black);
+      draw_triangle_edges(t);
     }
   }
 
   array_free(triangles_to_render);
 
   render_color_buffer();
-  clear_color_buffer(background_gray);
+  clear_color_buffer(LIGHT_GRAY);
 
   SDL_RenderPresent(renderer);
 }
