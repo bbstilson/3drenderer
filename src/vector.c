@@ -2,8 +2,6 @@
 
 #include <math.h>
 
-float vec2_inv_slope(vec2_t v0, vec2_t v1) { return (v1.x - v0.x) / (v1.y - v0.y); }
-
 float vec2_length(vec2_t v) { return sqrt(pow(v.x, 2) + pow(v.y, 2)); }
 float vec3_length(vec3_t v) { return sqrt(pow(v.x, 2) + pow(v.y, 2) + pow(v.z, 2)); }
 

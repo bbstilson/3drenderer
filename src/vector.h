@@ -9,8 +9,6 @@ typedef struct {
   float x, y, z;
 } vec3_t;
 
-float vec2_inv_slope(vec2_t v0, vec2_t v1);
-
 float vec2_length(vec2_t v);
 float vec3_length(vec3_t v);
 
