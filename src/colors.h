@@ -17,5 +17,6 @@
 #define FIREBRICK 0xFFB22222
 #define LIME 0xC8FF01
 #define LIGHT_GRAY 0xFFF3F3F3
+#define SKY_BLUE 0x87CEEB
 
 #endif

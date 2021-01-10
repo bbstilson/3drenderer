@@ -122,14 +122,3 @@ void draw_line(int x1, int y1, int x2, int y2, color_t color) {
     current_y += y_inc;
   }
 }
-
-bool should_render(vec3_t *vertices) {
-  vec3_t ab = vec3_sub(vertices[1], vertices[0]);
-  vec3_normalize(&ab);
-  vec3_t ac = vec3_sub(vertices[2], vertices[0]);
-  vec3_normalize(&ac);
-  vec3_t normal = vec3_cross(ab, ac);
-  vec3_normalize(&normal);
-  vec3_t camera_ray = vec3_sub(camera_position, vertices[0]);
-  return vec3_dot(normal, camera_ray) > 0;
-}

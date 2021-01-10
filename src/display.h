@@ -35,6 +35,4 @@ void draw_rect(int start_x, int start_y, int w, int h, color_t color);
 void draw_circle(int center_x, int center_y, int radius, color_t color);
 void draw_line(int x1, int y1, int x2, int y2, color_t color);
 
-bool should_render(vec3_t *vertices);
-
 #endif

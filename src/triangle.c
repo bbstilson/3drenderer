@@ -1,4 +1,5 @@
 #include "triangle.h"
+#include "colors.h"
 #include "display.h"
 
 #include <assert.h>
@@ -9,9 +10,7 @@ void int_swap(int *a, int *b) {
   *b = tmp;
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // Draw a triangle using three raw line calls
-///////////////////////////////////////////////////////////////////////////////
 void draw_triangle_edges(triangle_t t) {
   int x0 = t.points[0].x;
   int y0 = t.points[0].y;
@@ -20,14 +19,12 @@ void draw_triangle_edges(triangle_t t) {
   int x2 = t.points[2].x;
   int y2 = t.points[2].y;
 
-  draw_line(x0, y0, x1, y1, t.color);
-  draw_line(x1, y1, x2, y2, t.color);
-  draw_line(x2, y2, x0, y0, t.color);
+  draw_line(x0, y0, x1, y1, BLACK);
+  draw_line(x1, y1, x2, y2, BLACK);
+  draw_line(x2, y2, x0, y0, BLACK);
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // Draw a filled a triangle with a flat bottom
-///////////////////////////////////////////////////////////////////////////////
 //
 //        (x0,y0)
 //          / \
@@ -36,8 +33,6 @@ void draw_triangle_edges(triangle_t t) {
 //       /       \
 //      /         \
 //  (x1,y1)------(x2,y2)
-//
-///////////////////////////////////////////////////////////////////////////////
 void fill_flat_bottom_triangle(int x0, int y0, int x1, int y1, int x2, int y2, color_t color) {
   assert((y1 - y0) > 0);
   assert((y2 - y0) > 0);
@@ -58,9 +53,7 @@ void fill_flat_bottom_triangle(int x0, int y0, int x1, int y1, int x2, int y2, c
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // Draw a filled a triangle with a flat top
-///////////////////////////////////////////////////////////////////////////////
 //
 //  (x0,y0)------(x1,y1)
 //      \         /
@@ -70,7 +63,6 @@ void fill_flat_bottom_triangle(int x0, int y0, int x1, int y1, int x2, int y2, c
 //          \ /
 //        (x2,y2)
 //
-///////////////////////////////////////////////////////////////////////////////
 void fill_flat_top_triangle(int x0, int y0, int x1, int y1, int x2, int y2, color_t color) {
   assert((y2 - y0) > 0);
   assert((y2 - y1) > 0);
@@ -91,10 +83,8 @@ void fill_flat_top_triangle(int x0, int y0, int x1, int y1, int x2, int y2, colo
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // Draw a filled triangle with the flat-top/flat-bottom method
 // We split the original triangle in two, half flat-bottom and half flat-top
-///////////////////////////////////////////////////////////////////////////////
 //
 //          (x0,y0)
 //            / \
@@ -113,7 +103,6 @@ void fill_flat_top_triangle(int x0, int y0, int x1, int y1, int x2, int y2, colo
 //                           \
 //                         (x2,y2)
 //
-///////////////////////////////////////////////////////////////////////////////
 void draw_filled_triangle(triangle_t t) {
   int x0 = t.points[0].x;
   int y0 = t.points[0].y;
@@ -136,7 +125,9 @@ void draw_filled_triangle(triangle_t t) {
     int_swap(&x0, &x1);
   }
 
-  if (y1 == y2) {
+  if (y0 == y1 && y1 == y2) {
+    // do nothing... why does this happen?
+  } else if (y1 == y2) {
     // Draw flat-bottom triangle
     fill_flat_bottom_triangle(x0, y0, x1, y1, x2, y2, t.color);
   } else if (y0 == y1) {

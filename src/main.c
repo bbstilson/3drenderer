@@ -1,6 +1,7 @@
 #include "array.h"
 #include "colors.h"
 #include "display.h"
+#include "light.h"
 #include "matrix.h"
 #include "mesh.h"
 #include "settings.h"
@@ -22,7 +23,7 @@ int previous_frame_time = 0;
 mat4_t proj_matrix;
 
 void setup(void) {
-  render_method = RENDER_WIRE;
+  render_method = RENDER_FILL_TRIANGLE;
   cull_method = CULL_BACKFACE;
   /*
   There is a possibility that malloc will fail to allocate that number of bytes
@@ -36,8 +37,8 @@ void setup(void) {
   color_buffer_texture = SDL_CreateTexture(
       renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
 
-  // load_obj_file_data("./assets/cube.obj");
-  load_cube_mesh_data();
+  load_obj_file_data("./assets/f22.obj");
+  // load_cube_mesh_data();
 
   float fov = M_PI / 3.0;
   float aspect = (float)window_height / (float)window_width;
@@ -63,9 +64,9 @@ void update(void) {
 
   triangles_to_render = NULL;
 
-  mesh.rotation.x += 0.02;
-  mesh.rotation.y += 0.02;
-  mesh.rotation.z += 0.02;
+  mesh.rotation.x += 0.01;
+  // mesh.rotation.y += 0.01;
+  // mesh.rotation.z += 0.01;
 
   // mesh.scale.x += 0.002;
   // mesh.scale.y += 0.002;
@@ -108,9 +109,19 @@ void update(void) {
       transformed_vertices[j] = vec3_from_vec4(transformed_vertex);
     }
 
+    vec3_t ab = vec3_sub(transformed_vertices[1], transformed_vertices[0]);
+    vec3_normalize(&ab);
+    vec3_t ac = vec3_sub(transformed_vertices[2], transformed_vertices[0]);
+    vec3_normalize(&ac);
+    vec3_t surface_normal = vec3_cross(ab, ac);
+    vec3_normalize(&surface_normal);
+    vec3_t camera_ray = vec3_sub(camera_position, transformed_vertices[0]);
+
     // Cull triangles that are not facing the camera.
-    if (cull_method == CULL_BACKFACE && !should_render(transformed_vertices)) {
-      continue;
+    if (cull_method == CULL_BACKFACE) {
+      if (vec3_dot(surface_normal, camera_ray) < 0) {
+        continue;
+      }
     }
 
     vec4_t projected_points[3];
@@ -122,6 +133,9 @@ void update(void) {
       projected_points[i].x *= (window_width / 2.0);
       projected_points[i].y *= (window_height / 2.0);
 
+      // Invert the y values to account for flipped screen y coordinates.
+      projected_points[i].y *= -1;
+
       // Translate the projected points to the middle of the screen.
       projected_points[i].x += (window_width / 2.0);
       projected_points[i].y += (window_height / 2.0);
@@ -132,14 +146,18 @@ void update(void) {
     float avg_depth =
         (transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z) / 3.0;
 
-    triangle_t projected_triangle = {.points =
-                                         {
-                                             {projected_points[0].x, projected_points[0].y},
-                                             {projected_points[1].x, projected_points[1].y},
-                                             {projected_points[2].x, projected_points[2].y},
-                                         },
-                                     .color = mesh_face.color,
-                                     .avg_depth = avg_depth};
+    float light_intensity_factor = -vec3_dot(surface_normal, light.direction);
+    color_t adjusted_color = light_apply_intensity(mesh_face.color, light_intensity_factor);
+    triangle_t projected_triangle = {
+        .points =
+            {
+                {projected_points[0].x, projected_points[0].y},
+                {projected_points[1].x, projected_points[1].y},
+                {projected_points[2].x, projected_points[2].y},
+            },
+        .color = adjusted_color,
+        .avg_depth = avg_depth,
+    };
 
     array_push(triangles_to_render, projected_triangle);
   }
@@ -166,25 +184,23 @@ void render(void) {
     triangle_t t = triangles_to_render[i];
     if (render_method == RENDER_WIRE_VERTEX) {
       for (int j = 0; j < 3; j++) {
-        draw_rect(t.points[j].x - 3, t.points[j].y - 3, 6, 6, FIREBRICK);
+        draw_rect(t.points[j].x - 3, t.points[j].y - 2, 4, 4, BLACK);
       }
     }
 
     if (render_method == RENDER_FILL_TRIANGLE || render_method == RENDER_FILL_TRIANGLE_WIRE) {
-      color_t color = t.color;
-      // darken color if facing away from the light source.
-      draw_filled_triangle(t, color);
+      draw_filled_triangle(t);
     }
     if (render_method == RENDER_WIRE || render_method == RENDER_FILL_TRIANGLE_WIRE ||
         render_method == RENDER_WIRE_VERTEX) {
-      draw_triangle_edges(t, t.color);
+      draw_triangle_edges(t);
     }
   }
 
   array_free(triangles_to_render);
 
   render_color_buffer();
-  clear_color_buffer(LIGHT_GRAY);
+  clear_color_buffer(SKY_BLUE);
 
   SDL_RenderPresent(renderer);
 }

@@ -83,6 +83,7 @@ void load_obj_file_data(char *file) {
           .a = vertex_indicies[0],
           .b = vertex_indicies[1],
           .c = vertex_indicies[2],
+          .color = WHITE,
       };
 
       array_push(mesh.faces, face);
