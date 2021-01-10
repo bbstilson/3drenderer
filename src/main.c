@@ -1,6 +1,7 @@
 #include "array.h"
 #include "colors.h"
 #include "display.h"
+#include "matrix.h"
 #include "mesh.h"
 #include "settings.h"
 #include "triangle.h"
@@ -75,7 +76,6 @@ void process_input(void) {
 vec2_t project(vec3_t point) {
   vec2_t projected_point = {.x = (fov_factor * point.x) / point.z,
                             .y = (fov_factor * point.y) / point.z};
-
   return projected_point;
 }
 
@@ -96,35 +96,46 @@ void update(void) {
 
   triangles_to_render = NULL;
 
-  mesh.rotation.x += 0.02;
+  // mesh.rotation.x += 0.02;
   mesh.rotation.y += 0.02;
-  mesh.rotation.z += 0.02;
+  // mesh.rotation.z += 0.02;
+
+  // mesh.scale.x += 0.002;
+  // mesh.scale.y += 0.002;
+
+  // mesh.translation.x += 0.01;
+  mesh.translation.z = 5;
+
+  mat4_t scale_matrix = mat4_make_scale(mesh.scale);
+  mat4_t translation_matrix = mat4_make_translation(mesh.translation);
+  mat4_t rotation_matrix_x = mat4_make_rotation_x(mesh.rotation.x);
+  mat4_t rotation_matrix_y = mat4_make_rotation_y(mesh.rotation.y);
+  mat4_t rotation_matrix_z = mat4_make_rotation_z(mesh.rotation.z);
 
   int num_faces = array_length(mesh.faces);
   for (int i = 0; i < num_faces; i++) {
-    face_t cube_face = mesh.faces[i];
+    face_t mesh_face = mesh.faces[i];
 
     vec3_t face_vertices[3];
-    face_vertices[0] = mesh.vertices[cube_face.a - 1];
-    face_vertices[1] = mesh.vertices[cube_face.b - 1];
-    face_vertices[2] = mesh.vertices[cube_face.c - 1];
+    face_vertices[0] = mesh.vertices[mesh_face.a - 1];
+    face_vertices[1] = mesh.vertices[mesh_face.b - 1];
+    face_vertices[2] = mesh.vertices[mesh_face.c - 1];
 
     vec3_t transformed_vertices[3];
     for (int j = 0; j < 3; j++) {
-      vec3_t transformed_vertex = face_vertices[j];
+      vec4_t transformed_vertex = vec4_from_vec3(face_vertices[j]);
 
-      // Do some rotations.
-      transformed_vertex = vec3_rotate_x(transformed_vertex, mesh.rotation.x);
-      transformed_vertex = vec3_rotate_y(transformed_vertex, mesh.rotation.y);
-      transformed_vertex = vec3_rotate_z(transformed_vertex, mesh.rotation.z);
+      // Do some transformations.
+      // 1) Scale
+      // 2) Rotate
+      // 3) Translate
+      transformed_vertex = mat4_mul_vec4(scale_matrix, transformed_vertex);
+      transformed_vertex = mat4_mul_vec4(rotation_matrix_x, transformed_vertex);
+      transformed_vertex = mat4_mul_vec4(rotation_matrix_y, transformed_vertex);
+      transformed_vertex = mat4_mul_vec4(rotation_matrix_z, transformed_vertex);
+      transformed_vertex = mat4_mul_vec4(translation_matrix, transformed_vertex);
 
-      // Adjust for camera.
-      // transformed_vertex.x -= camera_position.x;
-      // transformed_vertex.y -= camera_position.y;
-      // transformed_vertex.z -= camera_position.z;
-      transformed_vertex.z += 5;
-
-      transformed_vertices[j] = transformed_vertex;
+      transformed_vertices[j] = vec3_from_vec4(transformed_vertex);
     }
 
     // Cull triangles that are not facing the camera.
@@ -132,21 +143,42 @@ void update(void) {
       continue;
     }
 
-    triangle_t projected_triangle;
-    projected_triangle.color = cube_face.color;
-
-    for (int j = 0; j < 3; j++) {
-      // Project the current vertext to 2d.
-      vec2_t projected_point = project(transformed_vertices[j]);
-
+    vec2_t projected_points[3];
+    for (int i = 0; i < 3; i++) {
+      projected_points[i] = project(transformed_vertices[i]);
       // Scale and translate the projected points to the middle of the screen.
-      projected_point.x += (window_width / 2);
-      projected_point.y += (window_height / 2);
-
-      projected_triangle.points[j] = projected_point;
+      projected_points[i].x += (window_width / 2);
+      projected_points[i].y += (window_height / 2);
     }
 
+    // Calculate the average depth for each face based on the vertices after
+    // transformation
+    float avg_depth =
+        (transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z) / 3.0;
+
+    triangle_t projected_triangle = {.points =
+                                         {
+                                             {projected_points[0].x, projected_points[0].y},
+                                             {projected_points[1].x, projected_points[1].y},
+                                             {projected_points[2].x, projected_points[2].y},
+                                         },
+                                     .color = mesh_face.color,
+                                     .avg_depth = avg_depth};
+
     array_push(triangles_to_render, projected_triangle);
+  }
+
+  // Sort the triangles to render by their avg_depth
+  int num_triangles = array_length(triangles_to_render);
+  for (int i = 0; i < num_triangles; i++) {
+    for (int j = i; j < num_triangles; j++) {
+      if (triangles_to_render[i].avg_depth < triangles_to_render[j].avg_depth) {
+        // Swap the triangles positions in the array
+        triangle_t temp = triangles_to_render[i];
+        triangles_to_render[i] = triangles_to_render[j];
+        triangles_to_render[j] = temp;
+      }
+    }
   }
 }
 

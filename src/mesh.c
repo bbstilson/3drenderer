@@ -5,7 +5,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-mesh_t mesh = {.vertices = NULL, .faces = NULL, {.x = 0, .y = 0, .z = 0}};
+mesh_t mesh = {.vertices = NULL,
+               .faces = NULL,
+               .rotation = {0, 0, 0},
+               .scale = {1.0, 1.0, 1.0},
+               .translation = {0, 0, 0}};
 
 const char VERTEX_PREFIX[] = "v ";
 const char FACE_PREFIX[] = "f ";

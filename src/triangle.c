@@ -1,4 +1,5 @@
 #include "triangle.h"
+#include <assert.h>
 
 void int_swap(int *a, int *b) {
   int tmp = *a;
@@ -27,6 +28,8 @@ void draw_triangle_edges(triangle_t t) {
 ///////////////////////////////////////////////////////////////////////////////
 void fill_flat_bottom_triangle(int x0, int y0, int x1, int y1, int x2, int y2, color_t color) {
   // Find the two slopes (two triangle legs)
+  assert((y1 - y0) > 0);
+  assert((y2 - y0) > 0);
   float inv_slope_1 = (float)(x1 - x0) / (y1 - y0);
   float inv_slope_2 = (float)(x2 - x0) / (y2 - y0);
 
@@ -57,6 +60,8 @@ void fill_flat_bottom_triangle(int x0, int y0, int x1, int y1, int x2, int y2, c
 ///////////////////////////////////////////////////////////////////////////////
 void fill_flat_top_triangle(int x0, int y0, int x1, int y1, int x2, int y2, color_t color) {
   // Find the two slopes (two triangle legs)
+  assert((y2 - y0) > 0);
+  assert((y2 - y1) > 0);
   float inv_slope_1 = (float)(x2 - x0) / (y2 - y0);
   float inv_slope_2 = (float)(x2 - x1) / (y2 - y1);
 
@@ -93,14 +98,15 @@ void draw_filled_triangle(triangle_t t) {
     int_swap(&x0, &x1);
   }
 
-  int my = y1;
-  int mx = (((x2 - x0) * (y1 - y0)) / (y2 - y0)) + x0;
-
+  // TODO: This can fail as all ys can equal each other when it's a perfect square I think.
+  // Also when backface culling is off...maybe.
   if (y1 == y2) {
     fill_flat_bottom_triangle(x0, y0, x1, y1, x2, y2, t.color);
   } else if (y0 == y1) {
     fill_flat_top_triangle(x0, y0, x1, y1, x2, y2, t.color);
   } else {
+    int my = y1;
+    int mx = (((x2 - x0) * (y1 - y0)) / (y2 - y0)) + x0;
     fill_flat_bottom_triangle(x0, y0, x1, y1, mx, my, t.color);
     fill_flat_top_triangle(x1, y1, mx, my, x2, y2, t.color);
   }

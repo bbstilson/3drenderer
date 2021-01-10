@@ -7,15 +7,14 @@
 #include <stdbool.h>
 
 typedef struct {
-  int a;
-  int b;
-  int c;
+  int a, b, c;
   color_t color;
 } face_t;
 
 typedef struct {
   vec2_t points[3];
   color_t color;
+  float avg_depth;
 } triangle_t;
 
 void draw_triangle_edges(triangle_t t);
