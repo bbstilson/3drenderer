@@ -4,7 +4,6 @@ int window_width = 800;
 int window_height = 600;
 
 vec3_t camera_position = {.x = 0, .y = 0, .z = 0};
-float fov_factor = 640;
 
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;

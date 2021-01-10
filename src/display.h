@@ -17,7 +17,6 @@ extern int window_width;
 extern int window_height;
 
 extern vec3_t camera_position;
-extern float fov_factor;
 
 extern SDL_Window *window;
 extern SDL_Renderer *renderer;

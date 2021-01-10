@@ -1,4 +1,6 @@
 #include "triangle.h"
+#include "display.h"
+
 #include <assert.h>
 
 void int_swap(int *a, int *b) {
@@ -7,10 +9,20 @@ void int_swap(int *a, int *b) {
   *b = tmp;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Draw a triangle using three raw line calls
+///////////////////////////////////////////////////////////////////////////////
 void draw_triangle_edges(triangle_t t) {
-  draw_line(t.points[0].x, t.points[0].y, t.points[1].x, t.points[1].y, t.color);
-  draw_line(t.points[1].x, t.points[1].y, t.points[2].x, t.points[2].y, t.color);
-  draw_line(t.points[2].x, t.points[2].y, t.points[0].x, t.points[0].y, t.color);
+  int x0 = t.points[0].x;
+  int y0 = t.points[0].y;
+  int x1 = t.points[1].x;
+  int y1 = t.points[1].y;
+  int x2 = t.points[2].x;
+  int y2 = t.points[2].y;
+
+  draw_line(x0, y0, x1, y1, t.color);
+  draw_line(x1, y1, x2, y2, t.color);
+  draw_line(x2, y2, x0, y0, t.color);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -27,9 +39,10 @@ void draw_triangle_edges(triangle_t t) {
 //
 ///////////////////////////////////////////////////////////////////////////////
 void fill_flat_bottom_triangle(int x0, int y0, int x1, int y1, int x2, int y2, color_t color) {
-  // Find the two slopes (two triangle legs)
   assert((y1 - y0) > 0);
   assert((y2 - y0) > 0);
+
+  // Find the two slopes (two triangle legs)
   float inv_slope_1 = (float)(x1 - x0) / (y1 - y0);
   float inv_slope_2 = (float)(x2 - x0) / (y2 - y0);
 
@@ -59,9 +72,10 @@ void fill_flat_bottom_triangle(int x0, int y0, int x1, int y1, int x2, int y2, c
 //
 ///////////////////////////////////////////////////////////////////////////////
 void fill_flat_top_triangle(int x0, int y0, int x1, int y1, int x2, int y2, color_t color) {
-  // Find the two slopes (two triangle legs)
   assert((y2 - y0) > 0);
   assert((y2 - y1) > 0);
+
+  // Find the two slopes (two triangle legs)
   float inv_slope_1 = (float)(x2 - x0) / (y2 - y0);
   float inv_slope_2 = (float)(x2 - x1) / (y2 - y1);
 
@@ -77,6 +91,29 @@ void fill_flat_top_triangle(int x0, int y0, int x1, int y1, int x2, int y2, colo
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Draw a filled triangle with the flat-top/flat-bottom method
+// We split the original triangle in two, half flat-bottom and half flat-top
+///////////////////////////////////////////////////////////////////////////////
+//
+//          (x0,y0)
+//            / \
+//           /   \
+//          /     \
+//         /       \
+//        /         \
+//   (x1,y1)------(mx,my)
+//       \_           \
+//          \_         \
+//             \_       \
+//                \_     \
+//                   \    \
+//                     \_  \
+//                        \_\
+//                           \
+//                         (x2,y2)
+//
+///////////////////////////////////////////////////////////////////////////////
 void draw_filled_triangle(triangle_t t) {
   int x0 = t.points[0].x;
   int y0 = t.points[0].y;
@@ -85,6 +122,7 @@ void draw_filled_triangle(triangle_t t) {
   int x2 = t.points[2].x;
   int y2 = t.points[2].y;
 
+  // We need to sort the vertices by y-coordinate ascending (y0 < y1 < y2)
   if (y0 > y1) {
     int_swap(&y0, &y1);
     int_swap(&x0, &x1);
@@ -98,16 +136,21 @@ void draw_filled_triangle(triangle_t t) {
     int_swap(&x0, &x1);
   }
 
-  // TODO: This can fail as all ys can equal each other when it's a perfect square I think.
-  // Also when backface culling is off...maybe.
   if (y1 == y2) {
+    // Draw flat-bottom triangle
     fill_flat_bottom_triangle(x0, y0, x1, y1, x2, y2, t.color);
   } else if (y0 == y1) {
+    // Draw flat-top triangle
     fill_flat_top_triangle(x0, y0, x1, y1, x2, y2, t.color);
   } else {
+    // Calculate the new vertex (mx,my) using triangle similarity
     int my = y1;
     int mx = (((x2 - x0) * (y1 - y0)) / (y2 - y0)) + x0;
+
+    // Draw flat-bottom triangle
     fill_flat_bottom_triangle(x0, y0, x1, y1, mx, my, t.color);
+
+    // Draw flat-top triangle
     fill_flat_top_triangle(x1, y1, mx, my, x2, y2, t.color);
   }
 }
