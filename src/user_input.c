@@ -30,6 +30,12 @@ void process_input(void) {
     case SDLK_4:
       render_method = RENDER_FILL_TRIANGLE_WIRE;
       break;
+    case SDLK_5:
+      render_method = RENDER_TEXTURED;
+      break;
+    case SDLK_6:
+      render_method = RENDER_TEXTURED_WIRE;
+      break;
     case SDLK_c:
       cull_method = CULL_NONE;
       break;

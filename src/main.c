@@ -6,6 +6,7 @@
 #include "mesh.h"
 #include "settings.h"
 #include "state.h"
+#include "texture.h"
 #include "triangle.h"
 #include "user_input.h"
 #include "vector.h"
@@ -37,14 +38,18 @@ void setup(void) {
   color_buffer_texture = SDL_CreateTexture(
       renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
 
-  load_obj_file_data("./assets/f22.obj");
-  // load_cube_mesh_data();
-
   float fov = M_PI / 3.0;
   float aspect = (float)window_height / (float)window_width;
   float znear = 0.1;
   float zfar = 100.0;
   proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
+
+  mesh_texture = (color_t *)REDBRICK_TEXTURE;
+  texture_width = 64;
+  texture_height = 64;
+
+  // load_obj_file_data("./assets/f22.obj");
+  load_cube_mesh_data();
 }
 
 void do_delay(void) {
@@ -155,6 +160,12 @@ void update(void) {
                 {projected_points[1].x, projected_points[1].y},
                 {projected_points[2].x, projected_points[2].y},
             },
+        .texcoords =
+            {
+                mesh_face.a_uv,
+                mesh_face.b_uv,
+                mesh_face.c_uv,
+            },
         .color = adjusted_color,
         .avg_depth = avg_depth,
     };
@@ -188,12 +199,27 @@ void render(void) {
       }
     }
 
-    if (render_method == RENDER_FILL_TRIANGLE || render_method == RENDER_FILL_TRIANGLE_WIRE) {
-      draw_filled_triangle(t);
-    }
-    if (render_method == RENDER_WIRE || render_method == RENDER_FILL_TRIANGLE_WIRE ||
-        render_method == RENDER_WIRE_VERTEX) {
+    switch (render_method) {
+    case RENDER_WIRE:
       draw_triangle_edges(t);
+      break;
+    case RENDER_WIRE_VERTEX:
+      draw_triangle_edges(t);
+      break;
+    case RENDER_FILL_TRIANGLE:
+      draw_filled_triangle(t);
+      break;
+    case RENDER_FILL_TRIANGLE_WIRE:
+      draw_filled_triangle(t);
+      draw_triangle_edges(t);
+      break;
+    case RENDER_TEXTURED:
+      draw_textured_triange(t, mesh_texture);
+      break;
+    case RENDER_TEXTURED_WIRE:
+      draw_textured_triange(t, mesh_texture);
+      draw_triangle_edges(t);
+      break;
     }
   }
 

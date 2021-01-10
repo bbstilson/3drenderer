@@ -1,14 +1,9 @@
 #include "triangle.h"
 #include "colors.h"
 #include "display.h"
+#include "utils.h"
 
 #include <assert.h>
-
-void int_swap(int *a, int *b) {
-  int tmp = *a;
-  *a = *b;
-  *b = tmp;
-}
 
 // Draw a triangle using three raw line calls
 void draw_triangle_edges(triangle_t t) {
@@ -145,3 +140,5 @@ void draw_filled_triangle(triangle_t t) {
     fill_flat_top_triangle(x1, y1, mx, my, x2, y2, t.color);
   }
 }
+
+void draw_textured_triangle(triangle_t t, color_t *texture) {}
