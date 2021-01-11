@@ -69,7 +69,7 @@ void update(void) {
 
   triangles_to_render = NULL;
 
-  mesh.rotation.x += 0.01;
+  // mesh.rotation.x += 0.01;
   // mesh.rotation.y += 0.01;
   // mesh.rotation.z += 0.01;
 
@@ -214,10 +214,10 @@ void render(void) {
       draw_triangle_edges(t);
       break;
     case RENDER_TEXTURED:
-      draw_textured_triange(t, mesh_texture);
+      draw_textured_triangle(t, mesh_texture);
       break;
     case RENDER_TEXTURED_WIRE:
-      draw_textured_triange(t, mesh_texture);
+      draw_textured_triangle(t, mesh_texture);
       draw_triangle_edges(t);
       break;
     }
