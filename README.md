@@ -5,5 +5,5 @@
 ## Development
 
 ```bash
-make build && make run
+make && make run
 ```

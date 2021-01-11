@@ -119,3 +119,5 @@ void vec3_swap(vec3_t *a, vec3_t *b) {
 vec4_t vec4_from_vec3(vec3_t v) { return (vec4_t){v.x, v.y, v.z, 1}; }
 
 vec3_t vec3_from_vec4(vec4_t v) { return (vec3_t){v.x, v.y, v.z}; }
+
+vec2_t vec2_from_vec4(vec4_t v) { return (vec2_t){v.x, v.y}; }
