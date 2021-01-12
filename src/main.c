@@ -8,6 +8,7 @@
 #include "state.h"
 #include "texture.h"
 #include "triangle.h"
+#include "upng.h"
 #include "user_input.h"
 #include "vector.h"
 
@@ -17,6 +18,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+// Array of triangles that should be rendered frame by frame.
 triangle_t *triangles_to_render = NULL;
 
 int previous_frame_time = 0;
@@ -36,7 +38,7 @@ void setup(void) {
   color_buffer = (uint32_t *)malloc(sizeof(uint32_t) * window_width * window_height);
 
   color_buffer_texture = SDL_CreateTexture(
-      renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
+      renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
 
   float fov = M_PI / 3.0;
   float aspect = (float)window_height / (float)window_width;
@@ -44,12 +46,9 @@ void setup(void) {
   float zfar = 100.0;
   proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
 
-  mesh_texture = (color_t *)REDBRICK_TEXTURE;
-  texture_width = 64;
-  texture_height = 64;
-
   // load_obj_file_data("./assets/f22.obj");
   load_cube_mesh_data();
+  load_png_texture_data("./assets/cube.png");
 }
 
 void do_delay(void) {
@@ -70,7 +69,7 @@ void update(void) {
   triangles_to_render = NULL;
 
   // mesh.rotation.x += 0.01;
-  mesh.rotation.y += 0.01;
+  mesh.rotation.y += 0.005;
   // mesh.rotation.z += 0.01;
 
   // mesh.scale.x += 0.002;
@@ -238,6 +237,7 @@ void free_resources(void) {
   free(color_buffer);
   array_free(mesh.vertices);
   array_free(mesh.faces);
+  upng_free(mesh_texture);
 }
 
 int main(void) {
