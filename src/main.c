@@ -7,7 +7,6 @@
 #include "settings.h"
 #include "state.h"
 #include "texture.h"
-#include "triangle.h"
 #include "upng.h"
 #include "user_input.h"
 #include "vector.h"
@@ -46,10 +45,12 @@ void setup(void) {
   float zfar = 100.0;
   proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
 
-  // load_cube_mesh_data();
-  load_obj_file_data("./assets/cube.obj");
-  // load_obj_file_data("./assets/f22.obj");
-  load_png_texture_data("./assets/cube.png");
+  // load_obj_file_data("./assets/cube.obj");
+  // load_png_texture_data("./assets/cube.png");
+  load_obj_file_data("./assets/f22.obj");
+  load_png_texture_data("./assets/f22.png");
+  // load_obj_file_data("./assets/crab.obj");
+  // load_png_texture_data("./assets/crab.png");
 }
 
 void do_delay(void) {
@@ -69,15 +70,11 @@ void update(void) {
 
   triangles_to_render = NULL;
 
-  // mesh.rotation.x += 0.01;
-  mesh.rotation.y += 0.005;
-  // mesh.rotation.z += 0.01;
-
-  // mesh.scale.x += 0.002;
-  // mesh.scale.y += 0.002;
-
-  // mesh.translation.x += 0.01;
-  mesh.translation.z = 5;
+  // Change the mesh scale, rotation, and translation values per animation frame
+  mesh.rotation.x += 0.01;
+  mesh.rotation.y += 0.000;
+  mesh.rotation.z += 0.000;
+  mesh.translation.z = 5.0;
 
   mat4_t scale_matrix = mat4_make_scale(mesh.scale);
   mat4_t translation_matrix = mat4_make_translation(mesh.translation);
@@ -94,7 +91,7 @@ void update(void) {
     face_vertices[1] = mesh.vertices[mesh_face.b - 1];
     face_vertices[2] = mesh.vertices[mesh_face.c - 1];
 
-    vec3_t transformed_vertices[3];
+    vec4_t transformed_vertices[3];
     for (int j = 0; j < 3; j++) {
       vec4_t transformed_vertex = vec4_from_vec3(face_vertices[j]);
 
@@ -111,16 +108,23 @@ void update(void) {
 
       transformed_vertex = mat4_mul_vec4(world_matrix, transformed_vertex);
 
-      transformed_vertices[j] = vec3_from_vec4(transformed_vertex);
+      transformed_vertices[j] = transformed_vertex;
     }
 
-    vec3_t ab = vec3_sub(transformed_vertices[1], transformed_vertices[0]);
-    vec3_normalize(&ab);
-    vec3_t ac = vec3_sub(transformed_vertices[2], transformed_vertices[0]);
-    vec3_normalize(&ac);
-    vec3_t surface_normal = vec3_cross(ab, ac);
+    // Get individual vectors from A, B, and C vertices to compute normal
+    vec3_t vector_a = vec3_from_vec4(transformed_vertices[0]); /*   A   */
+    vec3_t vector_b = vec3_from_vec4(transformed_vertices[1]); /*  / \  */
+    vec3_t vector_c = vec3_from_vec4(transformed_vertices[2]); /* C---B */
+
+    // Get the vector subtraction of B-A and C-A
+    vec3_t vector_ab = vec3_sub(vector_b, vector_a);
+    vec3_t vector_ac = vec3_sub(vector_c, vector_a);
+    vec3_normalize(&vector_ab);
+    vec3_normalize(&vector_ac);
+
+    vec3_t surface_normal = vec3_cross(vector_ab, vector_ac);
     vec3_normalize(&surface_normal);
-    vec3_t camera_ray = vec3_sub(camera_position, transformed_vertices[0]);
+    vec3_t camera_ray = vec3_sub(camera_position, vector_a);
 
     // Cull triangles that are not facing the camera.
     if (cull_method == CULL_BACKFACE) {
@@ -130,9 +134,9 @@ void update(void) {
     }
 
     vec4_t projected_points[3];
+
     for (int i = 0; i < 3; i++) {
-      projected_points[i] =
-          mat4_mul_vec4_project(proj_matrix, vec4_from_vec3(transformed_vertices[i]));
+      projected_points[i] = mat4_mul_vec4_project(proj_matrix, transformed_vertices[i]);
 
       // Scale into the viewport.
       projected_points[i].x *= (window_width / 2.0);
@@ -146,8 +150,7 @@ void update(void) {
       projected_points[i].y += (window_height / 2.0);
     }
 
-    // Calculate the average depth for each face based on the vertices after
-    // transformation
+    // Calculate the average depth for each face based on the vertices after transformation.
     float avg_depth =
         (transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z) / 3.0;
 
@@ -156,12 +159,24 @@ void update(void) {
     triangle_t projected_triangle = {
         .points =
             {
-                {projected_points[0].x, projected_points[0].y, projected_points[0].z,
-                 projected_points[0].w},
-                {projected_points[1].x, projected_points[1].y, projected_points[1].z,
-                 projected_points[1].w},
-                {projected_points[2].x, projected_points[2].y, projected_points[2].z,
-                 projected_points[2].w},
+                {
+                    projected_points[0].x,
+                    projected_points[0].y,
+                    projected_points[0].z,
+                    projected_points[0].w,
+                },
+                {
+                    projected_points[1].x,
+                    projected_points[1].y,
+                    projected_points[1].z,
+                    projected_points[1].w,
+                },
+                {
+                    projected_points[2].x,
+                    projected_points[2].y,
+                    projected_points[2].z,
+                    projected_points[2].w,
+                },
             },
         .texcoords =
             {
@@ -196,40 +211,48 @@ void render(void) {
   int num_triangles = array_length(triangles_to_render);
   for (int i = 0; i < num_triangles; i++) {
     triangle_t t = triangles_to_render[i];
-    if (render_method == RENDER_WIRE_VERTEX) {
-      for (int j = 0; j < 3; j++) {
-        draw_rect(t.points[j].x - 3, t.points[j].y - 2, 4, 4, BLACK);
-      }
+
+    // Draw filled triangle
+    if (render_method == RENDER_FILL_TRIANGLE || render_method == RENDER_FILL_TRIANGLE_WIRE) {
+      draw_filled_triangle(t.points[0].x, t.points[0].y, // vertex A
+                           t.points[1].x, t.points[1].y, // vertex B
+                           t.points[2].x, t.points[2].y, // vertex C
+                           t.color);
     }
 
-    switch (render_method) {
-    case RENDER_WIRE:
-      draw_triangle_edges(t);
-      break;
-    case RENDER_WIRE_VERTEX:
-      draw_triangle_edges(t);
-      break;
-    case RENDER_FILL_TRIANGLE:
-      draw_filled_triangle(t);
-      break;
-    case RENDER_FILL_TRIANGLE_WIRE:
-      draw_filled_triangle(t);
-      draw_triangle_edges(t);
-      break;
-    case RENDER_TEXTURED:
-      draw_textured_triangle(t, mesh_texture);
-      break;
-    case RENDER_TEXTURED_WIRE:
-      draw_textured_triangle(t, mesh_texture);
-      draw_triangle_edges(t);
-      break;
+    // Draw textured triangle
+    if (render_method == RENDER_TEXTURED || render_method == RENDER_TEXTURED_WIRE) {
+      draw_textured_triangle(
+          t.points[0].x, t.points[0].y, t.points[0].z, t.points[0].w, t.texcoords[0].u,
+          t.texcoords[0].v, // vertex A
+          t.points[1].x, t.points[1].y, t.points[1].z, t.points[1].w, t.texcoords[1].u,
+          t.texcoords[1].v, // vertex B
+          t.points[2].x, t.points[2].y, t.points[2].z, t.points[2].w, t.texcoords[2].u,
+          t.texcoords[2].v, // vertex C
+          mesh_texture);
+    }
+
+    // Draw triangle wireframe
+    if (render_method == RENDER_WIRE || render_method == RENDER_WIRE_VERTEX ||
+        render_method == RENDER_FILL_TRIANGLE_WIRE || render_method == RENDER_TEXTURED_WIRE) {
+      draw_triangle(t.points[0].x, t.points[0].y, // vertex A
+                    t.points[1].x, t.points[1].y, // vertex B
+                    t.points[2].x, t.points[2].y, // vertex C
+                    WHITE);
+    }
+
+    // Draw triangle vertex points
+    if (render_method == RENDER_WIRE_VERTEX) {
+      draw_rect(t.points[0].x - 3, t.points[0].y - 3, 6, 6, BLACK); // vertex A
+      draw_rect(t.points[1].x - 3, t.points[1].y - 3, 6, 6, BLACK); // vertex B
+      draw_rect(t.points[2].x - 3, t.points[2].y - 3, 6, 6, BLACK); // vertex C
     }
   }
 
   array_free(triangles_to_render);
 
   render_color_buffer();
-  clear_color_buffer(SKY_BLUE);
+  clear_color_buffer(0xFFCCFFFF);
 
   SDL_RenderPresent(renderer);
 }

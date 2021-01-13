@@ -20,8 +20,9 @@ typedef struct {
   float avg_depth;
 } triangle_t;
 
-void draw_triangle_edges(triangle_t t);
-void draw_filled_triangle(triangle_t t);
-void draw_textured_triangle(triangle_t t, color_t *texture);
-
+void draw_triangle(int x0, int y0, int x1, int y1, int x2, int y2, color_t color);
+void draw_filled_triangle(int x0, int y0, int x1, int y1, int x2, int y2, color_t color);
+void draw_textured_triangle(int x0, int y0, float z0, float w0, float u0, float v0, int x1, int y1,
+                            float z1, float w1, float u1, float v1, int x2, int y2, float z2,
+                            float w2, float u2, float v2, color_t *texture);
 #endif
