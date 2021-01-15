@@ -25,7 +25,7 @@ int previous_frame_time = 0;
 mat4_t proj_matrix;
 
 void setup(void) {
-  render_method = RENDER_FILL_TRIANGLE;
+  render_method = RENDER_TEXTURED;
   cull_method = CULL_BACKFACE;
   /*
   There is a possibility that malloc will fail to allocate that number of bytes
@@ -34,7 +34,8 @@ void setup(void) {
   is to learn the fundamentals of computer graphics and since this is basically
   an academic exercise, we avoid doing exhaustive, professional checks.
   */
-  color_buffer = (uint32_t *)malloc(sizeof(uint32_t) * window_width * window_height);
+  color_buffer = (color_t *)malloc(sizeof(color_t) * window_width * window_height);
+  z_buffer = (float *)malloc(sizeof(float) * window_width * window_height);
 
   color_buffer_texture = SDL_CreateTexture(
       renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
@@ -47,8 +48,14 @@ void setup(void) {
 
   // load_obj_file_data("./assets/cube.obj");
   // load_png_texture_data("./assets/cube.png");
-  load_obj_file_data("./assets/f22.obj");
-  load_png_texture_data("./assets/f22.png");
+  // load_obj_file_data("./assets/f22.obj");
+  // load_png_texture_data("./assets/f22.png");
+  // load_obj_file_data("./assets/efa.obj");
+  // load_png_texture_data("./assets/efa.png");
+  // load_obj_file_data("./assets/drone.obj");
+  // load_png_texture_data("./assets/drone.png");;
+  load_obj_file_data("./assets/f117.obj");
+  load_png_texture_data("./assets/f117.png");
   // load_obj_file_data("./assets/crab.obj");
   // load_png_texture_data("./assets/crab.png");
 }
@@ -72,8 +79,8 @@ void update(void) {
 
   // Change the mesh scale, rotation, and translation values per animation frame
   mesh.rotation.x += 0.01;
-  mesh.rotation.y += 0.000;
-  mesh.rotation.z += 0.000;
+  // mesh.rotation.y += 0.02;
+  // mesh.rotation.z += 0.01;
   mesh.translation.z = 5.0;
 
   mat4_t scale_matrix = mat4_make_scale(mesh.scale);
@@ -150,10 +157,6 @@ void update(void) {
       projected_points[i].y += (window_height / 2.0);
     }
 
-    // Calculate the average depth for each face based on the vertices after transformation.
-    float avg_depth =
-        (transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z) / 3.0;
-
     float light_intensity_factor = -vec3_dot(surface_normal, light.direction);
     color_t adjusted_color = light_apply_intensity(mesh_face.color, light_intensity_factor);
     triangle_t projected_triangle = {
@@ -185,23 +188,9 @@ void update(void) {
                 mesh_face.c_uv,
             },
         .color = adjusted_color,
-        .avg_depth = avg_depth,
     };
 
     array_push(triangles_to_render, projected_triangle);
-  }
-
-  // Sort the triangles to render by their avg_depth
-  int num_triangles = array_length(triangles_to_render);
-  for (int i = 0; i < num_triangles; i++) {
-    for (int j = i; j < num_triangles; j++) {
-      if (triangles_to_render[i].avg_depth < triangles_to_render[j].avg_depth) {
-        // Swap the triangles positions in the array
-        triangle_t temp = triangles_to_render[i];
-        triangles_to_render[i] = triangles_to_render[j];
-        triangles_to_render[j] = temp;
-      }
-    }
   }
 }
 
@@ -214,9 +203,9 @@ void render(void) {
 
     // Draw filled triangle
     if (render_method == RENDER_FILL_TRIANGLE || render_method == RENDER_FILL_TRIANGLE_WIRE) {
-      draw_filled_triangle(t.points[0].x, t.points[0].y, // vertex A
-                           t.points[1].x, t.points[1].y, // vertex B
-                           t.points[2].x, t.points[2].y, // vertex C
+      draw_filled_triangle(t.points[0].x, t.points[0].y, t.points[0].z, t.points[0].w, // vertex A
+                           t.points[1].x, t.points[1].y, t.points[1].z, t.points[1].w, // vertex B
+                           t.points[2].x, t.points[2].y, t.points[2].z, t.points[2].w, // vertex C
                            t.color);
     }
 
@@ -253,6 +242,7 @@ void render(void) {
 
   render_color_buffer();
   clear_color_buffer(0xFFCCFFFF);
+  clear_z_buffer();
 
   SDL_RenderPresent(renderer);
 }

@@ -21,13 +21,15 @@ extern vec3_t camera_position;
 extern SDL_Window *window;
 extern SDL_Renderer *renderer;
 extern SDL_Texture *color_buffer_texture;
-extern uint32_t *color_buffer;
+extern color_t *color_buffer;
+extern float *z_buffer;
 
 bool initialize_window(void);
 void destroy_window(void);
 
 void render_color_buffer(void);
 void clear_color_buffer(color_t color);
+void clear_z_buffer(void);
 
 void draw_pixel(int x, int y, color_t color);
 void draw_grid(int grid_size);

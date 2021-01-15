@@ -8,7 +8,8 @@ vec3_t camera_position = {.x = 0, .y = 0, .z = 0};
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Texture *color_buffer_texture = NULL;
-uint32_t *color_buffer = NULL;
+color_t *color_buffer = NULL;
+float *z_buffer = NULL;
 
 bool initialize_window(void) {
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -43,7 +44,7 @@ bool initialize_window(void) {
   pointer. Since the main goal of this course is to learn the fundamentals of computer graphics
   and since this is basically an academic exercise, we avoid doing exhaustive, professional checks.
   */
-  color_buffer = (uint32_t *)malloc(sizeof(uint32_t) * window_width * window_height);
+  color_buffer = (color_t *)malloc(sizeof(color_t) * window_width * window_height);
 
   color_buffer_texture = SDL_CreateTexture(
       renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
@@ -59,7 +60,7 @@ void destroy_window(void) {
 
 void render_color_buffer(void) {
   SDL_UpdateTexture(color_buffer_texture, NULL, color_buffer,
-                    (int)(window_width * sizeof(uint32_t)));
+                    (int)(window_width * sizeof(color_t)));
   SDL_RenderCopy(renderer, color_buffer_texture, NULL, NULL);
 }
 
@@ -67,6 +68,14 @@ void clear_color_buffer(color_t color) {
   for (int y = 0; y < window_height; y++) {
     for (int x = 0; x < window_width; x++) {
       draw_pixel(x, y, color);
+    }
+  }
+}
+
+void clear_z_buffer() {
+  for (int y = 0; y < window_height; y++) {
+    for (int x = 0; x < window_width; x++) {
+      z_buffer[(window_width * y) + x] = 1.0;
     }
   }
 }
