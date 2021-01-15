@@ -18,7 +18,9 @@
 #include <stdio.h>
 
 // Array of triangles that should be rendered frame by frame.
-triangle_t *triangles_to_render = NULL;
+#define MAX_TRIANGLES_PER_MESH 10000
+triangle_t triangles_to_render[MAX_TRIANGLES_PER_MESH];
+int num_triangles_to_render = 0;
 
 int previous_frame_time = 0;
 
@@ -52,10 +54,10 @@ void setup(void) {
   // load_png_texture_data("./assets/f22.png");
   // load_obj_file_data("./assets/efa.obj");
   // load_png_texture_data("./assets/efa.png");
-  // load_obj_file_data("./assets/drone.obj");
-  // load_png_texture_data("./assets/drone.png");;
-  load_obj_file_data("./assets/f117.obj");
-  load_png_texture_data("./assets/f117.png");
+  load_obj_file_data("./assets/drone.obj");
+  load_png_texture_data("./assets/drone.png");
+  // load_obj_file_data("./assets/f117.obj");
+  // load_png_texture_data("./assets/f117.png");
   // load_obj_file_data("./assets/crab.obj");
   // load_png_texture_data("./assets/crab.png");
 }
@@ -75,11 +77,11 @@ void do_delay(void) {
 void update(void) {
   do_delay();
 
-  triangles_to_render = NULL;
+  num_triangles_to_render = 0;
 
   // Change the mesh scale, rotation, and translation values per animation frame
-  mesh.rotation.x += 0.01;
-  // mesh.rotation.y += 0.02;
+  // mesh.rotation.x += 0.01;
+  mesh.rotation.y += 0.02;
   // mesh.rotation.z += 0.01;
   mesh.translation.z = 5.0;
 
@@ -190,15 +192,17 @@ void update(void) {
         .color = adjusted_color,
     };
 
-    array_push(triangles_to_render, projected_triangle);
+    if (num_triangles_to_render < MAX_TRIANGLES_PER_MESH) {
+      triangles_to_render[num_triangles_to_render] = projected_triangle;
+      num_triangles_to_render += 1;
+    }
   }
 }
 
 void render(void) {
   draw_grid(50);
 
-  int num_triangles = array_length(triangles_to_render);
-  for (int i = 0; i < num_triangles; i++) {
+  for (int i = 0; i < num_triangles_to_render; i++) {
     triangle_t t = triangles_to_render[i];
 
     // Draw filled triangle
@@ -238,10 +242,8 @@ void render(void) {
     }
   }
 
-  array_free(triangles_to_render);
-
   render_color_buffer();
-  clear_color_buffer(0xFFCCFFFF);
+  clear_color_buffer(0x00000000);
   clear_z_buffer();
 
   SDL_RenderPresent(renderer);
